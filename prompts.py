@@ -1,4 +1,5 @@
 """Interactive prompts (powered by questionary)."""
+
 from __future__ import annotations
 
 import questionary
@@ -22,8 +23,8 @@ def select_cleanup_mode() -> str | None:
             ),
             questionary.Choice(
                 title=(
-                    "ARCHIVE  – prefix owned playlists with \"[ARCHIVED] \"; "
-                    "move liked songs into a new playlist \"[ARCHIVED] Liked Songs\"; "
+                    'ARCHIVE  – prefix owned playlists with "[ARCHIVED] "; '
+                    'move liked songs into a new playlist "[ARCHIVED] Liked Songs"; '
                     "leave followed artists and saved albums untouched"
                 ),
                 value="ARCHIVE",

@@ -1,5 +1,13 @@
 # Spotify Account Migrator
 
+[![CI](https://github.com/janekstankov/spotify-migration/actions/workflows/ci.yml/badge.svg)](https://github.com/janekstankov/spotify-migration/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/janekstankov/spotify-migration?sort=semver)](https://github.com/janekstankov/spotify-migration/releases)
+[![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/janekstankov/spotify-migration/blob/main/CONTRIBUTING.md)
+[![GitHub stars](https://img.shields.io/github/stars/janekstankov/spotify-migration?style=social)](https://github.com/janekstankov/spotify-migration/stargazers)
+
 A Python command-line tool that moves the entire contents of one Spotify account to another — owned playlists, followed playlists, liked songs, followed artists and saved albums — while preserving the order in which everything was added.
 
 The migration is **idempotent**: it diffs the source against the destination before writing, adds only what is missing, and can be safely re-run after an interrupted session.
@@ -209,6 +217,22 @@ spotify-migration/
 - `--only=playlists,liked,artists,albums` selector to migrate a subset
 - Resume via on-disk state (checkpoint every N items)
 - Match owned playlists by `snapshot_id` / stored source id rather than by name, to handle deliberate renames
+
+See the [changelog](CHANGELOG.md) for release history.
+
+## Contributing
+
+Pull requests and issues are welcome. Before opening a PR, please read [CONTRIBUTING.md](CONTRIBUTING.md) for the local development workflow and coding conventions. All participants are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+For questions, ideas or migration stories, open a thread in [Discussions](https://github.com/janekstankov/spotify-migration/discussions).
+
+## Security
+
+If you believe you have found a security-relevant issue, please follow the private disclosure process described in [SECURITY.md](SECURITY.md) rather than opening a public issue.
+
+## Acknowledgements
+
+Built on top of the excellent [spotipy](https://github.com/spotipy-dev/spotipy) library, [rich](https://github.com/Textualize/rich) for the terminal UI and [questionary](https://github.com/tmbo/questionary) for interactive prompts.
 
 ## License
 

@@ -1,0 +1,71 @@
+name: Bug report
+description: Something is not working as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report. A clear description and
+        a precise reproduction steps make it far more likely that the issue
+        gets fixed quickly.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected to happen instead.
+      placeholder: The migration failed halfway through with...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: The smallest sequence of actions that reproduces the problem.
+      placeholder: |
+        1. Run `python migrate.py`
+        2. Choose ARCHIVE mode
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal output / JSON report
+      description: Paste relevant output and (if safe) the JSON report from `logs/`.
+      render: shell
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.12.3"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5 / Ubuntu 24.04 / Windows 11 + WSL2"
+    validations:
+      required: true
+
+  - type: input
+    id: tool-version
+    attributes:
+      label: Tool version or commit
+      description: Release tag (e.g. v1.0.0) or `git rev-parse --short HEAD`.
+      placeholder: "v1.0.0"
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true
+        - label: I removed or redacted any credentials (Client ID / Secret / OAuth codes) from the output I pasted.
+          required: true

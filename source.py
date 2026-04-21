@@ -5,6 +5,7 @@ owned playlists (with tracks in their playlist order), followed playlists,
 liked tracks (sorted by added_at ASC), followed artists, saved albums
 (sorted by added_at ASC). Local tracks and tombstoned tracks are skipped.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -83,9 +84,7 @@ def _paginate(sp: spotipy.Spotify, first_page: dict) -> list[dict]:
     return items
 
 
-def _fetch_playlist_tracks(
-    sp: spotipy.Spotify, playlist_id: str
-) -> tuple[list[str], int, int]:
+def _fetch_playlist_tracks(sp: spotipy.Spotify, playlist_id: str) -> tuple[list[str], int, int]:
     """Return (track URIs in playlist order, skipped_local, skipped_none)."""
     uris: list[str] = []
     skipped_local = 0
@@ -150,20 +149,24 @@ def scan_account(
             continue
         owner_id = (raw.get("owner") or {}).get("id")
         if owner_id == my_id:
-            owned.append(OwnedPlaylist(
-                id=raw["id"],
-                name=raw.get("name") or "",
-                description=raw.get("description") or "",
-                public=bool(raw.get("public")),
-                collaborative=bool(raw.get("collaborative")),
-                snapshot_id=raw.get("snapshot_id") or "",
-            ))
+            owned.append(
+                OwnedPlaylist(
+                    id=raw["id"],
+                    name=raw.get("name") or "",
+                    description=raw.get("description") or "",
+                    public=bool(raw.get("public")),
+                    collaborative=bool(raw.get("collaborative")),
+                    snapshot_id=raw.get("snapshot_id") or "",
+                )
+            )
         else:
-            followed.append(FollowedPlaylist(
-                id=raw["id"],
-                name=raw.get("name") or "",
-                owner_id=owner_id or "",
-            ))
+            followed.append(
+                FollowedPlaylist(
+                    id=raw["id"],
+                    name=raw.get("name") or "",
+                    owner_id=owner_id or "",
+                )
+            )
 
     if fetch_playlist_items:
         for idx, pl in enumerate(owned, start=1):
@@ -185,11 +188,13 @@ def scan_account(
         uri = track.get("uri")
         if not uri:
             continue
-        liked.append(LikedTrack(
-            uri=uri,
-            name=track.get("name") or "",
-            added_at=item.get("added_at") or "",
-        ))
+        liked.append(
+            LikedTrack(
+                uri=uri,
+                name=track.get("name") or "",
+                added_at=item.get("added_at") or "",
+            )
+        )
     liked.sort(key=lambda t: t.added_at)
 
     # Followed artists – cursor-based pagination via `after`.
@@ -216,11 +221,13 @@ def scan_account(
         aid = album.get("id")
         if not aid:
             continue
-        albums.append(SavedAlbum(
-            id=aid,
-            name=album.get("name") or "",
-            added_at=item.get("added_at") or "",
-        ))
+        albums.append(
+            SavedAlbum(
+                id=aid,
+                name=album.get("name") or "",
+                added_at=item.get("added_at") or "",
+            )
+        )
     albums.sort(key=lambda a: a.added_at)
 
     return AccountSnapshot(

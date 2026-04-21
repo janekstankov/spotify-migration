@@ -5,10 +5,11 @@ Every operation first checks the destination state and only writes what is
 missing (owned playlists are matched by name, everything else by URI/ID), so
 a crashed run can be safely resumed by re-invoking the tool.
 """
+
 from __future__ import annotations
 
 import time
-from typing import Callable
+from collections.abc import Callable
 
 import spotipy
 
@@ -25,7 +26,6 @@ from utils import (
     saved_tracks_delete,
     unfollow_artists,
 )
-
 
 ARCHIVE_PREFIX = "[ARCHIVED] "
 ARCHIVE_LIKED_NAME = "[ARCHIVED] Liked Songs"
@@ -66,6 +66,7 @@ def _find_existing_archive_liked(snapshot: AccountSnapshot) -> OwnedPlaylist | N
 
 
 # ---------- Cleanup modes ----------
+
 
 def cleanup_wipe(
     sp: spotipy.Spotify,
@@ -276,6 +277,7 @@ CLEANUP_FNS = {
 
 # ---------- Migration (source -> destination, idempotent) ----------
 
+
 def migrate_content(
     sp: spotipy.Spotify,
     source: AccountSnapshot,
@@ -310,8 +312,7 @@ def migrate_content(
     }
 
     dest_owned_by_name: dict[str, OwnedPlaylist] = {
-        pl.name: pl for pl in destination.owned_playlists
-        if not _is_archived(pl.name)
+        pl.name: pl for pl in destination.owned_playlists if not _is_archived(pl.name)
     }
     dest_followed_ids = {pl.id for pl in destination.followed_playlists}
     dest_liked_uris = {t.uri for t in destination.liked_tracks}
@@ -401,9 +402,7 @@ def migrate_content(
         progress("mig_liked", idx, total)
 
     # 4. Followed artists – batches of 50, only the missing ones.
-    missing_artists = [
-        a.id for a in source.followed_artists if a.id not in dest_artist_ids
-    ]
+    missing_artists = [a.id for a in source.followed_artists if a.id not in dest_artist_ids]
     stats["artists_follow_skipped"] = len(source.followed_artists) - len(missing_artists)
     total = len(missing_artists)
     done = 0

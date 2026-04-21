@@ -10,6 +10,7 @@ Orchestrates the full migration pipeline:
 
 A JSON report is written to logs/migration_YYYYMMDD_HHMMSS.json at the end.
 """
+
 from __future__ import annotations
 
 import sys
@@ -42,11 +43,15 @@ console = Console()
 
 
 def _login_step(step: str, label: str, getter) -> tuple:
-    console.print(f"\n[bold cyan]{step}[/bold cyan] Signing into the [bold]{label}[/bold] account...")
+    console.print(
+        f"\n[bold cyan]{step}[/bold cyan] Signing into the [bold]{label}[/bold] account..."
+    )
     client = getter()
     user = describe_user(client)
     name = user["display_name"] or user["id"]
-    console.print(f"      [green]✓[/green] Signed in as [bold]{name}[/bold] ([dim]id: {user['id']}[/dim])")
+    console.print(
+        f"      [green]✓[/green] Signed in as [bold]{name}[/bold] ([dim]id: {user['id']}[/dim])"
+    )
     return client, user
 
 
@@ -123,19 +128,14 @@ def _describe_plan(mode: str, source: AccountSnapshot, destination: AccountSnaps
 
     console.print()
     console.print("  [green]+[/green] migrate from source to destination:")
-    console.print(
-        f"      {src['playlists_owned']} owned playlists (tracks in original order)"
-    )
+    console.print(f"      {src['playlists_owned']} owned playlists (tracks in original order)")
     console.print(f"      {src['playlists_followed']} followed playlists")
     console.print(
         f"      {src['liked_tracks']} liked tracks "
         f"[dim](one at a time, 0.2 s delay ≈ {src['liked_tracks'] * 0.2 / 60:.1f} min)[/dim]"
     )
     console.print(f"      {src['followed_artists']} artists")
-    console.print(
-        f"      {src['saved_albums']} albums "
-        f"[dim](one at a time, 0.2 s delay)[/dim]"
-    )
+    console.print(f"      {src['saved_albums']} albums " f"[dim](one at a time, 0.2 s delay)[/dim]")
 
 
 STAGE_LABELS = {
@@ -175,15 +175,19 @@ class ProgressTracker:
 
 
 def main() -> int:
-    console.print(Panel.fit(
-        "[bold]Spotify Account Migrator[/bold]\n"
-        "[dim]OAuth → scan → cleanup → migration[/dim]",
-        border_style="cyan",
-    ))
+    console.print(
+        Panel.fit(
+            "[bold]Spotify Account Migrator[/bold]\n"
+            "[dim]OAuth → scan → cleanup → migration[/dim]",
+            border_style="cyan",
+        )
+    )
 
     try:
         source_sp, source_user = _login_step("[1/6]", "SOURCE", get_source_client)
-        destination_sp, destination_user = _login_step("[2/6]", "DESTINATION", get_destination_client)
+        destination_sp, destination_user = _login_step(
+            "[2/6]", "DESTINATION", get_destination_client
+        )
     except MissingCredentialsError as exc:
         console.print(f"\n[red]✗[/red] {exc}")
         return 2
@@ -207,7 +211,9 @@ def main() -> int:
 
     _print_comparison(source_snapshot, destination_snapshot)
 
-    console.print("\n[bold cyan][5/6][/bold cyan] Choose a cleanup mode for the DESTINATION account:")
+    console.print(
+        "\n[bold cyan][5/6][/bold cyan] Choose a cleanup mode for the DESTINATION account:"
+    )
     mode = select_cleanup_mode()
     if not mode:
         console.print("[yellow]Cancelled.[/yellow]")
@@ -255,12 +261,8 @@ def main() -> int:
             # Do not archive destination playlists whose name matches one of the
             # source's owned playlists – those are either imports from a previous
             # run or a name collision that the idempotent migration will merge.
-            cleanup_kwargs["protect_names"] = {
-                pl.name for pl in source_snapshot.owned_playlists
-            }
-        cleanup_result = cleanup_fn(
-            destination_sp, destination_snapshot, **cleanup_kwargs
-        )
+            cleanup_kwargs["protect_names"] = {pl.name for pl in source_snapshot.owned_playlists}
+        cleanup_result = cleanup_fn(destination_sp, destination_snapshot, **cleanup_kwargs)
         report.cleanup = cleanup_result
 
         if mode != "SKIP":

@@ -1,0 +1,82 @@
+[project]
+name = "spotify-migration"
+version = "1.0.0"
+description = "Python CLI to migrate playlists, liked songs, followed artists and saved albums between two Spotify accounts — idempotent and order-preserving."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Filip Magiela" }]
+keywords = [
+    "spotify",
+    "spotify-api",
+    "migration",
+    "spotify-migration",
+    "cli",
+    "playlist",
+    "liked-songs",
+    "oauth2",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "spotipy>=2.23.0",
+    "rich>=13.7.0",
+    "questionary>=2.0.1",
+    "python-dotenv>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/janekstankov/spotify-migration"
+Repository = "https://github.com/janekstankov/spotify-migration"
+Issues = "https://github.com/janekstankov/spotify-migration/issues"
+Changelog = "https://github.com/janekstankov/spotify-migration/blob/main/CHANGELOG.md"
+
+[project.scripts]
+spotify-migration = "migrate:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["migrate", "auth", "source", "destination", "prompts", "utils"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+]
+ignore = [
+    "E501",    # line length handled by the formatter
+    "B008",    # allow function calls as argument defaults (rich/questionary use this)
+    "B904",    # do not force `raise ... from` in every except
+]
+
+[tool.ruff.lint.per-file-ignores]
+"migrate.py" = ["BLE001"]
+"destination.py" = ["BLE001"]
+"utils.py" = ["BLE001"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

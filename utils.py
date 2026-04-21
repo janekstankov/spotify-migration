@@ -5,17 +5,18 @@ target the wrong URL (`me/library` instead of the correct Web API paths).
 When upstream spotipy is fixed, the `*_tracks`, `*_albums`, `follow_*`,
 `unfollow_*` and `follow_playlist` helpers can be removed.
 """
+
 from __future__ import annotations
 
 import json
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from spotipy.exceptions import SpotifyException
-
 
 PROJECT_DIR = Path(__file__).parent
 LOGS_DIR = PROJECT_DIR / "logs"
@@ -44,12 +45,12 @@ def safe_call(fn: Callable, *args: Any, max_retries: int = 3, **kwargs: Any):
                 time.sleep(retry_after + 1)
                 continue
             if 500 <= status < 600:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             raise
         except Exception as exc:
             last_exc = exc
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
             continue
     if last_exc:
         raise last_exc
@@ -102,6 +103,7 @@ def chunks(seq: list, size: int):
 # Several library/follow methods in spotipy 2.26 send requests to a
 # non-existent `me/library` endpoint. The wrappers below issue the same calls
 # against the correct Web API URLs using sp._put / sp._delete.
+
 
 def _track_id(uri_or_id: str) -> str:
     """Return a bare track id from either a full URI or a raw id."""

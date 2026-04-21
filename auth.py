@@ -4,6 +4,7 @@ Each account gets its own token cache file so both sessions can coexist without
 clobbering each other. Tokens are refreshed automatically by spotipy on every
 subsequent run.
 """
+
 from __future__ import annotations
 
 import os
@@ -15,16 +16,18 @@ from spotipy.oauth2 import SpotifyOAuth
 
 load_dotenv()
 
-SCOPES = " ".join([
-    "playlist-read-private",
-    "playlist-read-collaborative",
-    "playlist-modify-private",
-    "playlist-modify-public",
-    "user-library-read",
-    "user-library-modify",
-    "user-follow-read",
-    "user-follow-modify",
-])
+SCOPES = " ".join(
+    [
+        "playlist-read-private",
+        "playlist-read-collaborative",
+        "playlist-modify-private",
+        "playlist-modify-public",
+        "user-library-read",
+        "user-library-modify",
+        "user-follow-read",
+        "user-follow-modify",
+    ]
+)
 
 CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
