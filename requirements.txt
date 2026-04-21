@@ -1,0 +1,4 @@
+spotipy>=2.23.0
+rich>=13.7.0
+questionary>=2.0.1
+python-dotenv>=1.0.0

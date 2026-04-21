@@ -1,0 +1,25 @@
+# Credentials and OAuth token caches
+.env
+.cache-source
+.cache-destination
+.cache*
+
+# Migration reports (keep the directory, ignore its contents)
+logs/*
+!logs/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
