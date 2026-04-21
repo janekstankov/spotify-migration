@@ -1,6 +1,6 @@
 [project]
 name = "spotify-migration"
-version = "1.0.0"
+version = "1.0.1"
 description = "Python CLI to migrate playlists, liked songs, followed artists and saved albums between two Spotify accounts — idempotent and order-preserving."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -44,14 +44,17 @@ Issues = "https://github.com/janekstankov/spotify-migration/issues"
 Changelog = "https://github.com/janekstankov/spotify-migration/blob/main/CHANGELOG.md"
 
 [project.scripts]
-spotify-migration = "migrate:main"
+spotify-migration = "spotify_migration.migrate:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["migrate", "auth", "source", "destination", "prompts", "utils"]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 target-version = "py310"
@@ -67,15 +70,15 @@ select = [
     "B",   # flake8-bugbear
 ]
 ignore = [
-    "E501",    # line length handled by the formatter
-    "B008",    # allow function calls as argument defaults (rich/questionary use this)
+    "E501",    # line length is handled by the formatter
+    "B008",    # allow function calls in argument defaults (rich/questionary rely on this)
     "B904",    # do not force `raise ... from` in every except
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"migrate.py" = ["BLE001"]
-"destination.py" = ["BLE001"]
-"utils.py" = ["BLE001"]
+"**/migrate.py" = ["BLE001"]
+"**/destination.py" = ["BLE001"]
+"**/utils.py" = ["BLE001"]
 
 [tool.ruff.format]
 quote-style = "double"

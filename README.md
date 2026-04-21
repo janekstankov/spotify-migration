@@ -81,8 +81,10 @@ cd spotify-migration
 
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 ```
+
+This installs the `spotify-migration` console script into the active environment and keeps the project as an editable install, so any future `git pull` updates are picked up immediately.
 
 ## Spotify Developer setup
 
@@ -112,7 +114,9 @@ Since late 2025, Spotify requires that the **owner of a Developer Dashboard appl
 ## Usage
 
 ```bash
-.venv/bin/python migrate.py
+spotify-migration            # after `pip install -e .`
+# or, without installing:
+python -m spotify_migration
 ```
 
 The tool walks through six steps:
@@ -155,7 +159,7 @@ Every write is preceded by a diff against the destination's current state:
 - **Saved albums** are matched by album ID.
 - `[ARCHIVED] Liked Songs` is **reused** across runs when it already exists; only missing URIs are appended, so repeated archiving does not duplicate content.
 
-As a result, a run that was interrupted by a network failure, a crashed terminal or any other accident can be resumed simply by running `migrate.py` again — the tool recomputes the diff and continues.
+As a result, a run that was interrupted by a network failure, a crashed terminal or any other accident can be resumed simply by running `spotify-migration` again — the tool recomputes the diff and continues.
 
 ## Report
 
@@ -188,16 +192,19 @@ Failed items (tracks unavailable in the destination region, tracks removed from 
 
 ```
 spotify-migration/
-├── migrate.py        # orchestrator: 6-step CLI, progress bars, JSON report
-├── auth.py           # dual OAuth, per-account token cache, manual-paste flow
-├── source.py         # read-only account scanner (scan_account → AccountSnapshot)
-├── destination.py    # cleanup (WIPE/ARCHIVE/SKIP) + idempotent migration
-├── prompts.py        # questionary prompts (mode picker, confirmations)
-├── utils.py          # retry with Retry-After, JSON report writer,
-│                     #   workarounds for broken spotipy endpoints
+├── src/spotify_migration/
+│   ├── migrate.py        # orchestrator: 6-step CLI, progress bars, JSON report
+│   ├── auth.py           # dual OAuth, per-account token cache, manual-paste flow
+│   ├── source.py         # read-only account scanner (scan_account → AccountSnapshot)
+│   ├── destination.py    # cleanup (WIPE/ARCHIVE/SKIP) + idempotent migration
+│   ├── prompts.py        # questionary prompts (mode picker, confirmations)
+│   └── utils.py          # retry with Retry-After, JSON report writer,
+│                         #   workarounds for broken spotipy endpoints
+├── .github/              # CI workflow, issue/PR templates, community docs
+├── logs/                 # JSON reports (git-ignored)
+├── pyproject.toml        # packaging, console script, ruff config
 ├── requirements.txt
-├── .env.example
-└── logs/             # JSON reports (git-ignored)
+└── Makefile              # make install / run / lint / format
 ```
 
 ## Known limitations
@@ -222,13 +229,13 @@ See the [changelog](CHANGELOG.md) for release history.
 
 ## Contributing
 
-Pull requests and issues are welcome. Before opening a PR, please read [CONTRIBUTING.md](CONTRIBUTING.md) for the local development workflow and coding conventions. All participants are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Pull requests and issues are welcome. Before opening a PR, please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the local development workflow and coding conventions. All participants are expected to follow the [Code of Conduct](.github/CODE_OF_CONDUCT.md).
 
 For questions, ideas or migration stories, open a thread in [Discussions](https://github.com/janekstankov/spotify-migration/discussions).
 
 ## Security
 
-If you believe you have found a security-relevant issue, please follow the private disclosure process described in [SECURITY.md](SECURITY.md) rather than opening a public issue.
+If you believe you have found a security-relevant issue, please follow the private disclosure process described in [SECURITY.md](.github/SECURITY.md) rather than opening a public issue.
 
 ## Acknowledgements
 

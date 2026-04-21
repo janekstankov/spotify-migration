@@ -20,9 +20,11 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements.txt
-      - name: Install ruff
-        run: pip install ruff==0.6.9
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
       - name: Ruff check
         run: ruff check .
       - name: Ruff format (verify)
@@ -42,14 +44,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: requirements.txt
-      - name: Install dependencies
+      - name: Install the package
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Import all modules
-        run: python -c "import migrate, auth, source, destination, prompts, utils; print('imports OK')"
-      - name: CLI help does not crash
-        env:
-          SPOTIFY_CLIENT_ID: dummy
-          SPOTIFY_CLIENT_SECRET: dummy
-        run: python -c "import migrate; print(hasattr(migrate, 'main'))"
+          pip install -e .
+      - name: Import package and verify console script
+        run: |
+          python -c "import spotify_migration; print('imports OK, version', spotify_migration.__version__)"
+          command -v spotify-migration  # verify the console script was installed

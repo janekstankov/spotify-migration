@@ -13,8 +13,8 @@ from collections.abc import Callable
 
 import spotipy
 
-from source import AccountSnapshot, OwnedPlaylist
-from utils import (
+from .source import AccountSnapshot, OwnedPlaylist
+from .utils import (
     FailureLog,
     chunks,
     follow_artists,

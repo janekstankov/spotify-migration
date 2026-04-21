@@ -28,16 +28,16 @@ from rich.progress import (
 )
 from rich.table import Table
 
-from auth import (
+from .auth import (
     MissingCredentialsError,
     describe_user,
     get_destination_client,
     get_source_client,
 )
-from destination import CLEANUP_FNS, migrate_content
-from prompts import confirm_continue, confirm_wipe, select_cleanup_mode
-from source import AccountSnapshot, scan_account
-from utils import FailureLog, MigrationReport, save_report
+from .destination import CLEANUP_FNS, migrate_content
+from .prompts import confirm_continue, confirm_wipe, select_cleanup_mode
+from .source import AccountSnapshot, scan_account
+from .utils import FailureLog, MigrationReport, save_report
 
 console = Console()
 
@@ -109,12 +109,12 @@ def _describe_plan(mode: str, source: AccountSnapshot, destination: AccountSnaps
     elif mode == "ARCHIVE":
         console.print(
             f"  [yellow]●[/yellow] rename: up to {dst['playlists_owned']} owned playlists "
-            f"→ prefix [bold]\"[ARCHIVED] \"[/bold]"
+            f'→ prefix [bold]"[ARCHIVED] "[/bold]'
         )
         if dst["liked_tracks"]:
             console.print(
                 f"  [yellow]●[/yellow] destination's liked tracks ({dst['liked_tracks']}) "
-                f"→ new playlist [bold]\"[ARCHIVED] Liked Songs\"[/bold]; Liked Songs slot cleared"
+                f'→ new playlist [bold]"[ARCHIVED] Liked Songs"[/bold]; Liked Songs slot cleared'
             )
         else:
             console.print("  [dim]●[/dim] destination has no liked tracks – nothing to archive")
@@ -135,7 +135,7 @@ def _describe_plan(mode: str, source: AccountSnapshot, destination: AccountSnaps
         f"[dim](one at a time, 0.2 s delay ≈ {src['liked_tracks'] * 0.2 / 60:.1f} min)[/dim]"
     )
     console.print(f"      {src['followed_artists']} artists")
-    console.print(f"      {src['saved_albums']} albums " f"[dim](one at a time, 0.2 s delay)[/dim]")
+    console.print(f"      {src['saved_albums']} albums [dim](one at a time, 0.2 s delay)[/dim]")
 
 
 STAGE_LABELS = {
@@ -177,8 +177,7 @@ class ProgressTracker:
 def main() -> int:
     console.print(
         Panel.fit(
-            "[bold]Spotify Account Migrator[/bold]\n"
-            "[dim]OAuth → scan → cleanup → migration[/dim]",
+            "[bold]Spotify Account Migrator[/bold]\n[dim]OAuth → scan → cleanup → migration[/dim]",
             border_style="cyan",
         )
     )

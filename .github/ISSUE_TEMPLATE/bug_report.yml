@@ -24,7 +24,7 @@ body:
       label: Steps to reproduce
       description: The smallest sequence of actions that reproduces the problem.
       placeholder: |
-        1. Run `python migrate.py`
+        1. Run `spotify-migration`
         2. Choose ARCHIVE mode
         3. ...
     validations:

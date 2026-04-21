@@ -18,8 +18,9 @@ from typing import Any
 
 from spotipy.exceptions import SpotifyException
 
-PROJECT_DIR = Path(__file__).parent
-LOGS_DIR = PROJECT_DIR / "logs"
+# Reports are written to the directory the user launches the tool from,
+# so relative paths in the terminal output are easy to click.
+LOGS_DIR = Path.cwd() / "logs"
 
 
 def safe_call(fn: Callable, *args: Any, max_retries: int = 3, **kwargs: Any):

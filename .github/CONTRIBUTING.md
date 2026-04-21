@@ -10,7 +10,7 @@ cd spotify-migration
 
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt -r requirements-dev.txt
+pip install -e . -r requirements-dev.txt
 
 # (optional) install the pre-commit hook
 pre-commit install
@@ -19,7 +19,7 @@ pre-commit install
 Run the CLI against a test pair of Spotify accounts the same way an end user would:
 
 ```bash
-.venv/bin/python migrate.py
+spotify-migration
 ```
 
 A successful end-to-end test run before sending a PR is strongly preferred when the change touches the cleanup or migration paths.

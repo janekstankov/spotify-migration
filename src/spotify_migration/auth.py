@@ -33,7 +33,12 @@ CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8888/callback")
 
-PROJECT_DIR = Path(__file__).parent
+# Cache token files live alongside the user's .env file, which is typically the
+# project root from which the tool is invoked. Using cwd (instead of the module
+# path) keeps the caches in the same place regardless of whether the package is
+# executed via `python -m spotify_migration`, the `spotify-migration` console
+# script, or an editable install.
+PROJECT_DIR = Path.cwd()
 CACHE_SOURCE = PROJECT_DIR / ".cache-source"
 CACHE_DESTINATION = PROJECT_DIR / ".cache-destination"
 
