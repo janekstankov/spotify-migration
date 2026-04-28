@@ -1,6 +1,6 @@
 # Runtime dependencies. Pinned to major versions known to work; Dependabot
 # will open PRs when newer compatible releases are available.
 spotipy>=2.23.0,<3
-rich>=13.7.0,<15
+rich>=13.7.0,<16
 questionary>=2.0.1,<3
 python-dotenv>=1.0.0,<2
