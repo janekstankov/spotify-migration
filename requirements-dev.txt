@@ -2,4 +2,4 @@
 
 # Tooling for the development workflow.
 ruff==0.15.11
-pre-commit>=3.7.0
+pre-commit>=4.6.0
