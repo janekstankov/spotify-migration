@@ -1,6 +1,8 @@
 # Runtime dependencies. Pinned to major versions known to work; Dependabot
 # will open PRs when newer compatible releases are available.
-spotipy>=2.23.0,<3
+# spotipy >= 2.26 is required: it targets Spotify's post-February-2026
+# Web API endpoints (me/library, me/playlists, playlists/{id}/items).
+spotipy>=2.26.0,<3
 rich>=13.7.0,<15
 questionary>=2.0.1,<3
 python-dotenv>=1.0.0,<2
