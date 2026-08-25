@@ -1,9 +1,9 @@
 """Shared utilities: rate-limit retry, failure log, JSON report writer.
 
-Also provides drop-in replacements for several spotipy 2.26 endpoints that
-target the wrong URL (`me/library` instead of the correct Web API paths).
-When upstream spotipy is fixed, the `*_tracks`, `*_albums`, `follow_*`,
-`unfollow_*` and `follow_playlist` helpers can be removed.
+Also provides playlist follow/unfollow helpers for Spotify's post-February-2026
+Web API: `PUT/DELETE /me/library` replace the old per-type endpoints, and
+`playlist_add_items`/`playlist_items`/playlist creation are handled by spotipy
+>= 2.26 directly.
 """
 
 from __future__ import annotations
@@ -43,6 +43,11 @@ def safe_call(fn: Callable, *args: Any, max_retries: int = 3, **kwargs: Any):
                     retry_after = int(headers.get("Retry-After", 1))
                 except (TypeError, ValueError):
                     retry_after = 1
+                # Daily-quota 429s (reason QUOTA_EXCEEDED) carry Retry-After
+                # values of hours — the time until the quota reset. Retrying
+                # is pointless and sleeping would hang the CLI, so fail fast.
+                if retry_after > 3600:
+                    raise
                 time.sleep(retry_after + 1)
                 continue
             if 500 <= status < 600:
@@ -100,43 +105,29 @@ def chunks(seq: list, size: int):
         yield seq[i : i + size]
 
 
-# ---------- Workarounds for spotipy 2.26 ----------
-# Several library/follow methods in spotipy 2.26 send requests to a
-# non-existent `me/library` endpoint. The wrappers below issue the same calls
-# against the correct Web API URLs using sp._put / sp._delete.
+# ---------- Playlist follow/unfollow helpers ----------
+# Spotify's February 2026 Web API changes replaced the playlist follow
+# endpoints with `PUT/DELETE /me/library?uris=spotify:playlist:{id}`.
+# Unfollowing via DELETE /me/library is confirmed working. Following via
+# PUT /me/library currently fails server-side with HTTP 500 for playlist
+# URIs (verified 2026-08-25), so follow_playlist tries the new endpoint
+# first and falls back to the legacy one.
+# `me/library` accepts at most 40 URIs per request.
 
-
-def _track_id(uri_or_id: str) -> str:
-    """Return a bare track id from either a full URI or a raw id."""
-    return uri_or_id.split(":")[-1]
-
-
-def saved_tracks_add(sp, uris: list[str]):
-    ids = [_track_id(u) for u in uris]
-    return sp._put("me/tracks?ids=" + ",".join(ids))
-
-
-def saved_tracks_delete(sp, uris: list[str]):
-    ids = [_track_id(u) for u in uris]
-    return sp._delete("me/tracks?ids=" + ",".join(ids))
-
-
-def saved_albums_add(sp, album_ids: list[str]):
-    return sp._put("me/albums?ids=" + ",".join(album_ids))
-
-
-def saved_albums_delete(sp, album_ids: list[str]):
-    return sp._delete("me/albums?ids=" + ",".join(album_ids))
-
-
-def follow_artists(sp, artist_ids: list[str]):
-    return sp._put("me/following?type=artist&ids=" + ",".join(artist_ids))
-
-
-def unfollow_artists(sp, artist_ids: list[str]):
-    return sp._delete("me/following?type=artist&ids=" + ",".join(artist_ids))
+LIBRARY_BATCH_MAX = 40
 
 
 def follow_playlist(sp, playlist_id: str):
+    """Follow a playlist, trying Spotify's new `/me/library` endpoint first."""
     pid = playlist_id.split(":")[-1]
-    return sp._put(f"playlists/{pid}/followers")
+    try:
+        return sp.current_user_follow_playlist(pid)
+    except SpotifyException:
+        return sp._put(f"playlists/{pid}/followers")
+
+
+def unfollow_playlist(sp, playlist_id: str):
+    """Unfollow a playlist (Spotify treats unfollowing an owned playlist as
+    deletion) via DELETE /me/library."""
+    pid = playlist_id.split(":")[-1]
+    return sp._delete("me/library", uris=f"spotify:playlist:{pid}")

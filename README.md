@@ -111,6 +111,10 @@ This installs the `spotify-migration` console script into the active environment
 
 Since late 2025, Spotify requires that the **owner of a Developer Dashboard application have an active Premium subscription**. Without it, every Web API call returns HTTP 403 with `Active premium subscription required for the owner of the app`. The accounts being migrated do not have to be Premium — only the account that created the application.
 
+### Development Mode API changes
+
+Since the [February 2026 Web API changes](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide), Development Mode apps receive HTTP 403 on the old write endpoints (`POST /users/{user_id}/playlists`, `PUT /me/tracks`, `PUT /me/following`, `PUT /me/albums`, …). The replacements are `POST /me/playlists`, `PUT`/`DELETE /me/library` and `POST /playlists/{id}/items`. This tool (with spotipy ≥ 2.26) uses the new endpoints — make sure you run an up-to-date copy.
+
 ## Usage
 
 ```bash
@@ -199,7 +203,7 @@ spotify-migration/
 │   ├── destination.py    # cleanup (WIPE/ARCHIVE/SKIP) + idempotent migration
 │   ├── prompts.py        # questionary prompts (mode picker, confirmations)
 │   └── utils.py          # retry with Retry-After, JSON report writer,
-│                         #   workarounds for broken spotipy endpoints
+│                         #   playlist follow/unfollow helpers
 ├── .github/              # CI workflow, issue/PR templates, community docs
 ├── logs/                 # JSON reports (git-ignored)
 ├── pyproject.toml        # packaging, console script, ruff config
@@ -209,7 +213,7 @@ spotify-migration/
 
 ## Known limitations
 
-- **spotipy 2.26 bug workaround.** Several library/follow methods in spotipy 2.26 (`current_user_saved_tracks_*`, `current_user_saved_albums_*`, `user_follow_artists`, `user_unfollow_artists`, `current_user_follow_playlist`) target a non-existent `me/library` endpoint instead of the correct Web API URLs. `utils.py` contains drop-in replacements that call the correct endpoints directly. Once upstream fixes this, the wrappers can be removed.
+- **Spotify's February 2026 Web API cutover.** Development Mode apps receive HTTP 403 on the pre-February-2026 write endpoints, so every migration write would fail. The tool targets the replacement endpoints via spotipy ≥ 2.26: `POST /me/playlists`, `PUT`/`DELETE /me/library` (max 40 URIs per batch) and `POST /playlists/{id}/items`. Playlist *following* tries `PUT /me/library` first and falls back to `PUT /playlists/{id}/followers`, because the new endpoint currently returns HTTP 500 for playlist URIs (verified 2026-08).
 - **Playlist folders are not migrated.** Spotify's Web API does not expose folders — they exist only in the desktop client.
 - **Collaborative playlists are copied as private.** Spotify requires a playlist to be public before a second flip to collaborative.
 - **Local files** (`track.is_local == True`) are skipped and logged to `failures`.

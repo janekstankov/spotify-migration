@@ -85,7 +85,12 @@ def _paginate(sp: spotipy.Spotify, first_page: dict) -> list[dict]:
 
 
 def _fetch_playlist_tracks(sp: spotipy.Spotify, playlist_id: str) -> tuple[list[str], int, int]:
-    """Return (track URIs in playlist order, skipped_local, skipped_none)."""
+    """Return (track URIs in playlist order, skipped_local, skipped_none).
+
+    Note: since Spotify's February 2026 API changes, GET /playlists/{id}/items
+    nests each entry under `item` (previously `track`). Requesting the old
+    field name returns empty objects.
+    """
     uris: list[str] = []
     skipped_local = 0
     skipped_none = 0
@@ -93,11 +98,11 @@ def _fetch_playlist_tracks(sp: spotipy.Spotify, playlist_id: str) -> tuple[list[
         playlist_id,
         limit=100,
         additional_types=("track",),
-        fields="items(track(uri,is_local,type)),next",
+        fields="items(item(uri,is_local,type)),next",
     )
     while True:
         for item in page.get("items", []):
-            track = item.get("track")
+            track = item.get("item")
             if track is None:
                 skipped_none += 1
                 continue

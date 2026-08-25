@@ -15,16 +15,12 @@ import spotipy
 
 from .source import AccountSnapshot, OwnedPlaylist
 from .utils import (
+    LIBRARY_BATCH_MAX,
     FailureLog,
     chunks,
-    follow_artists,
     follow_playlist,
     safe_call,
-    saved_albums_add,
-    saved_albums_delete,
-    saved_tracks_add,
-    saved_tracks_delete,
-    unfollow_artists,
+    unfollow_playlist,
 )
 
 ARCHIVE_PREFIX = "[ARCHIVED] "
@@ -90,7 +86,7 @@ def cleanup_wipe(
     progress("wipe_playlists", 0, len(all_playlists))
     for idx, pl in enumerate(all_playlists, start=1):
         try:
-            safe_call(sp.current_user_unfollow_playlist, pl.id)
+            safe_call(unfollow_playlist, sp, pl.id)
             report["playlists_removed"] += 1
         except Exception as exc:  # noqa: BLE001
             failures.add("wipe_playlist", id=pl.id, name=pl.name, reason=str(exc))
@@ -100,9 +96,9 @@ def cleanup_wipe(
     total = len(liked_uris)
     done = 0
     progress("wipe_liked", done, total)
-    for batch in chunks(liked_uris, 50):
+    for batch in chunks(liked_uris, LIBRARY_BATCH_MAX):
         try:
-            safe_call(saved_tracks_delete, sp, batch)
+            safe_call(sp.current_user_saved_tracks_delete, batch)
             report["liked_removed"] += len(batch)
         except Exception as exc:  # noqa: BLE001
             failures.add("wipe_liked_batch", count=len(batch), reason=str(exc))
@@ -113,9 +109,9 @@ def cleanup_wipe(
     total = len(artist_ids)
     done = 0
     progress("wipe_artists", done, total)
-    for batch in chunks(artist_ids, 50):
+    for batch in chunks(artist_ids, LIBRARY_BATCH_MAX):
         try:
-            safe_call(unfollow_artists, sp, batch)
+            safe_call(sp.user_unfollow_artists, batch)
             report["artists_unfollowed"] += len(batch)
         except Exception as exc:  # noqa: BLE001
             failures.add("wipe_artists_batch", count=len(batch), reason=str(exc))
@@ -126,9 +122,9 @@ def cleanup_wipe(
     total = len(album_ids)
     done = 0
     progress("wipe_albums", done, total)
-    for batch in chunks(album_ids, 50):
+    for batch in chunks(album_ids, LIBRARY_BATCH_MAX):
         try:
-            safe_call(saved_albums_delete, sp, batch)
+            safe_call(sp.current_user_saved_albums_delete, batch)
             report["albums_removed"] += len(batch)
         except Exception as exc:  # noqa: BLE001
             failures.add("wipe_albums_batch", count=len(batch), reason=str(exc))
@@ -206,12 +202,10 @@ def cleanup_archive(
         existing_uris = set(existing_archive.track_uris)
         report["archive_playlist_reused"] = True
     else:
-        me_id = snapshot.me["id"]
         archive_name = ARCHIVE_LIKED_NAME
         try:
             new_pl = safe_call(
-                sp.user_playlist_create,
-                me_id,
+                sp.current_user_playlist_create,
                 archive_name,
                 public=False,
                 description="Liked songs archived before migration.",
@@ -246,9 +240,9 @@ def cleanup_archive(
     total = len(uris)
     done = 0
     progress("archive_liked_clear", done, total)
-    for batch in chunks(uris, 50):
+    for batch in chunks(uris, LIBRARY_BATCH_MAX):
         try:
-            safe_call(saved_tracks_delete, sp, batch)
+            safe_call(sp.current_user_saved_tracks_delete, batch)
             report["liked_slot_cleared"] += len(batch)
         except Exception as exc:  # noqa: BLE001
             failures.add("archive_liked_clear", count=len(batch), reason=str(exc))
@@ -283,7 +277,6 @@ def migrate_content(
     source: AccountSnapshot,
     destination: AccountSnapshot,
     *,
-    destination_user_id: str,
     failures: FailureLog,
     progress: Progress = _noop_progress,
 ) -> dict:
@@ -345,8 +338,7 @@ def migrate_content(
         else:
             try:
                 new_pl = safe_call(
-                    sp.user_playlist_create,
-                    destination_user_id,
+                    sp.current_user_playlist_create,
                     pl.name,
                     public=pl.public,
                     description=pl.description or "",
@@ -394,7 +386,7 @@ def migrate_content(
             stats["tracks_liked_skipped"] += 1
         else:
             try:
-                safe_call(saved_tracks_add, sp, [t.uri])
+                safe_call(sp.current_user_saved_tracks_add, [t.uri])
                 stats["tracks_liked_added"] += 1
             except Exception as exc:  # noqa: BLE001
                 failures.add("mig_like_track", uri=t.uri, name=t.name, reason=str(exc))
@@ -407,9 +399,9 @@ def migrate_content(
     total = len(missing_artists)
     done = 0
     progress("mig_artists", done, total)
-    for batch in chunks(missing_artists, 50):
+    for batch in chunks(missing_artists, LIBRARY_BATCH_MAX):
         try:
-            safe_call(follow_artists, sp, batch)
+            safe_call(sp.user_follow_artists, batch)
             stats["artists_followed"] += len(batch)
         except Exception as exc:  # noqa: BLE001
             failures.add("mig_follow_artists_batch", count=len(batch), reason=str(exc))
@@ -425,7 +417,7 @@ def migrate_content(
             stats["albums_save_skipped"] += 1
         else:
             try:
-                safe_call(saved_albums_add, sp, [a.id])
+                safe_call(sp.current_user_saved_albums_add, [a.id])
                 stats["albums_saved"] += 1
             except Exception as exc:  # noqa: BLE001
                 failures.add("mig_save_album", id=a.id, name=a.name, reason=str(exc))

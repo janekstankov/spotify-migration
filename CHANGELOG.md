@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+- **Spotify February 2026 API cutover.** Development Mode apps receive HTTP 403 on the pre-February-2026 write endpoints, so every migration write (playlist creation, liked tracks, followed artists, saved albums) failed. The tool now uses the replacement endpoints — `POST /me/playlists`, `PUT`/`DELETE /me/library` (max 40 URIs per batch) and `POST /playlists/{id}/items` — via spotipy ≥ 2.26. Playlist following tries `PUT /me/library` first and falls back to `PUT /playlists/{id}/followers`, because the new endpoint currently returns HTTP 500 for playlist URIs.
+- **Playlist track scanning.** `GET /playlists/{id}/items` nests each entry under `item` (previously `track`). The scanner requested the old field name and silently received empty objects, which would have skipped every track during migration. Field selection and parsing now use the new shape.
+- **Quota 429s no longer hang the CLI.** Spotify's daily-quota 429s carry a `Retry-After` of hours (the time until the quota reset). Retries now fail fast when `Retry-After` exceeds one hour instead of sleeping through it.
+
+### Changed
+- Minimum spotipy version raised from 2.23 to 2.26 (first release targeting the post-February-2026 endpoints).
+- Removed the custom endpoint workaround layer in `utils.py`; spotipy ≥ 2.26 methods are used directly, except for the playlist follow/unfollow helpers.
+
 ## [1.0.1] — 2026-04-21
 
 ### Changed

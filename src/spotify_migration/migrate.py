@@ -274,7 +274,6 @@ def main() -> int:
             destination_sp,
             source_snapshot,
             destination_snapshot,
-            destination_user_id=destination_user["id"],
             failures=failures,
             progress=tracker,
         )
